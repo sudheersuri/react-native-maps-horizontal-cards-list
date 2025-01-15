@@ -1,74 +1,137 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useRef, useState } from "react";
+import MapView, { Marker } from "react-native-maps";
+import {
+  StyleSheet,
+  Text,
+  View,
+  FlatList,
+  Pressable,
+  Image,
+} from "react-native";
+import markers from "@/assets/markers";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+const HomeScreen = () => {
+  const mapRef = useRef<MapView>(null);
+  const [selectedCard, setSelectedCard] = useState("");
 
-export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <View style={styles.container}>
+      <MapView
+        style={styles.map}
+        ref={mapRef}
+        initialRegion={markers[0].coordinates}
+      >
+        {markers.map((marker, index) => (
+          <Marker
+            key={index}
+            title={marker.name}
+            coordinate={marker.coordinates}
+          />
+        ))}
+      </MapView>
+      <View style={styles.markerListContainer}>
+        <FlatList
+          horizontal
+          data={markers}
+          keyExtractor={(item) => item.name}
+          renderItem={({ item: marker }) => (
+            <Pressable
+              onPress={() => {
+                setSelectedCard(marker.name);
+                mapRef.current?.animateToRegion(marker.coordinates, 1000);
+              }}
+              style={
+                marker.name === selectedCard
+                  ? styles.activeMarkerButton
+                  : styles.markerButton
+              }
+            >
+              <Image
+                source={{ uri: marker.image }}
+                style={styles.markerImage}
+              />
+              <View style={styles.markerInfo}>
+                <Text style={styles.markerName}>{marker.name}</Text>
+                <Text style={styles.markerDescription}>
+                  {marker.description}
+                </Text>
+              </View>
+            </Pressable>
+          )}
+          showsHorizontalScrollIndicator={false}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      </View>
+    </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#f0f0f0",
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  map: {
+    flex: 1,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
+  markerListContainer: {
+    position: "absolute",
+    bottom: 20,
     left: 0,
-    position: 'absolute',
+    right: 0,
+    paddingHorizontal: 10,
+  },
+  activeMarkerButton: {
+    backgroundColor: "#E7E3AC",
+    borderRadius: 10,
+    padding: 10,
+    marginHorizontal: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: 250,
+  },
+  markerButton: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 10,
+    marginHorizontal: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    width: 250,
+  },
+  markerImage: {
+    width: 55,
+    height: 55,
+    borderRadius: 10,
+    marginRight: 10,
+  },
+  markerInfo: {
+    flex: 1,
+  },
+  markerName: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  markerDescription: {
+    fontSize: 12,
+    color: "#666",
+    marginTop: 5,
   },
 });
+export default HomeScreen;
